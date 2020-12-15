@@ -4,14 +4,14 @@ class RenderHTML {
      */
     constructor(output) {
         this.output = output
-        this.elements = null //Object: holds all nodes that are rendered with attribute "_key" elements accessible through this.elements[key]
+        this.elements = null // Object: holds all nodes that are rendered with attribute "_key" elements accessible through this.elements[key]
         this.topLevelEls = null // Array: holds elements that do not have any parent node. only necessary if there is more than one element without a parent, othewise use this.element
         this.isInitialized = false // Bool: true when the class has successfully initialized
         this._renderData = {} // Object: holds element data before rendering
-       
-        //BUILDER________________________________
 
-        //create elements with $() and add children with _()
+        // RENDER FUNCTIONS________________________________
+
+        // create elements with $() and add children with _()
         this.$ = (tagName, attributes, events) => {
 
             function randId(length = 20) { // used for generating renderData keys & data-renderids
@@ -37,7 +37,7 @@ class RenderHTML {
 
                 _: function () {
 
-                    //move through each argument to store data in this._renderData object
+                    // move through each argument to store data in this._renderData object
                     Array.from(arguments).forEach(data => {
 
                         let parent = renderer._renderData[id]
@@ -46,7 +46,7 @@ class RenderHTML {
                         if (typeof data === "string" || typeof data === "number") parent.childIds.push([data])
 
                         else if (!data) {
-                            //this will happen if the variable was found undefined
+                            // this will happen if the variable was found undefined
                         }
                         else if (data.id) {
 
@@ -67,13 +67,13 @@ class RenderHTML {
         }
 
         this.e = (eType, func) => [eType, func] // used in 3rd arg in $() for adding event listeners
+        // /RENDER FUNCTIONS________________________________
 
         this.init = () => {
 
             let prepDiv = null
             let renderData = this._renderData
 
-            //HELPERS________________________________
             function createChildren(data) { // creates els by moving through [children] array
 
                 let parentEl = prepDiv.querySelector(`[data-renderid='${data.id}']`)
@@ -166,7 +166,7 @@ class RenderHTML {
             }
 
             if (this.render) this.render()
-            else console.error("You must define the render() function of your RenderHTML class to initialize")
+            else return void console.error("You must define the render() function of your RenderHTML class to initialize")
 
             prepareElements()
             this.topLevelEls = Array.from(prepDiv.children)
