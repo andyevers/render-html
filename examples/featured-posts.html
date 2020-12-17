@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RenderHTML Featured Posts</title>
+</head>
+
+<body>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: center;
+        }
+
+        h1 {
+            margin-top: 40px;
+            text-align: center;
+        }
+
+        #output {
+            width: 1200px;
+            max-width: 100%;
+            margin: auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            column-gap: 20px;
+        }
+    </style>
+
+
+    <h1>RenderHTML Featured Posts</h1>
+    <p>This example shows how you can give data to the RenderHTML class to dynamically create elements that have similar
+        structure with different data, such as featured posts</p>
+        
+    <div id="output">
+        <!-- Posts will display in here -->
+    </div>
+
+
+    <script src="../render-html.js"></script>
+    <script>
+        // This is an array of post data that will be used to make the featured posts
+        const POST_DATA = [
+            {
+                title: "I Love RenderHTML!",
+                description: "This is the most handy dandy script that you'll find for creating HTML with JavaScript. no more createElement & setAttribute nonsense!",
+                image: "http://picsum.photos/id/0/380/250",
+                link: "https://github.com/andyevers/render-html/"
+            },
+            {
+                title: "The Adventures of Mittens' Kittens",
+                description: "Mittens goes on a quest with the kittens from down the street to find the magic yarnball. He soon finds himself in an unexpected friendship with a stray calico.",
+                image: "http://picsum.photos/id/40/380/250",
+                link: "https://guides.github.com/"
+            },
+            {
+                title: "Who Really Ate Gilbert's Grapes?",
+                description: "We debunk the truth of this famous question and all the mysteries that surround it. Where did Gilbert get the grapes? Why did someone eat them?",
+                image: "http://picsum.photos/id/23/380/250",
+                link: "https://guides.github.com/activities/socialize/"
+            }
+        ]
+
+        // Define your class extending the RenderHTML class
+        class FeaturedPost extends RenderHTML {
+            constructor(data, output) {
+                super(output)
+                this.title = data.title
+                this.description = data.description
+                this.image = data.image
+                this.link = data.link
+                this.init()
+            }
+
+            logElement(e) {
+                console.log("just clicked element: ", e.target)
+            }
+
+            render() {
+                const $ = this.$
+                const e = this.e
+
+                //This will be the output HTML for your post data
+                $("div", { class: "post-item" })._(
+                    $("img", { src: this.image }),
+                    $("div", { class: "post-details", style: "color: #333;" })._(
+
+                        $("h3", {}, e("click", this.logElement))._(this.title),
+                        $("p")._(this.description)
+                    ),
+                    $("a", { href: this.link, target: "_blank" })._("Read More")
+                )
+            }
+        }
+
+        const output = document.getElementById("output")
+        //create the posts
+        for (let post of POST_DATA) {
+            let postElement = new FeaturedPost(post, output)
+            console.log("created element:", postElement.element)
+        }
+
+    </script>
+
+</body>
+
+</html>
