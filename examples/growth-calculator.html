@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Investment Growth Calculator</title>
+</head>
+
+<body>
+
+    <style>
+        body {
+            text-align: center;
+            font-family: Arial, Helvetica, sans-serif;
+            margin: 0px;
+        }
+
+        #chart-container {
+            display: flex;
+            background-color: #ececec;
+            width: 100vw;
+            position: relative;
+        }
+
+        #input-container {
+            text-align: left;
+            width: 400px;
+            position: absolute;
+            z-index: 1;
+        }
+
+        label,
+        input {
+            width: 50%;
+            box-sizing: border-box;
+            display: inline-block;
+        }
+
+        .bar {
+            flex-grow: 1;
+            font-size: 12px;
+            margin: auto 10px 0px;
+            position: relative;
+            background-color: #4d348a;
+        }
+
+        .bar-text {
+            position: absolute;
+            min-width: 100%;
+            right: 0px;
+            bottom: 100%;
+        }
+
+        .bar::after {
+            content: attr(data-year);
+            position: absolute;
+            top: 100%;
+        }
+    </style>
+
+
+    <h1>Investment Growth Calculator</h1>
+    <p>This demonstrates using "_key" to access elements in your RenderHTML class</p>
+    <div id="input-container"></div>
+    <div id="chart-container"></div>
+
+    <script src="../render-html.js"></script>
+    <script>
+        class Inputs extends RenderHTML {
+            constructor(output, onInput) {
+                super(output)
+                this.chartContainer = chartContainer
+                this.onInput = onInput
+
+                this.getInputValues = () => {
+                    return {
+                        startingInvestment: parseFloat(this.elements.startingInvestmentInput.value),
+                        yearlyInvestment: parseFloat(this.elements.yearlyInvestmentInput.value),
+                        growthRate: parseFloat(this.elements.growthRateInput.value),
+                        years: parseInt(this.elements.yearsInput.value)
+                    }
+                }
+                this.init()
+            }
+            render() {
+                const { $, e } = this
+                const calculate = e("input", this.onInput)
+
+                $("label")._("Starting Balance")
+                $("input", { _key: "startingInvestmentInput", type: "number", step: 1000, value: 30000 }, calculate)
+
+                $("label")._("Yearly Investment")
+                $("input", { _key: "yearlyInvestmentInput", type: "number", step: 1000, value: 10000 }, calculate)
+
+                $("label")._("Growth Rate")
+                $("input", { _key: "growthRateInput", type: "number", min: -1.00, max: 1.00, step: 0.01, value: 0.12 }, calculate)
+
+                $("label")._("Years")
+                $("input", { _key: "yearsInput", type: "number", min: 1, value: 20 }, calculate)
+            }
+        }
+
+
+        class Bar extends RenderHTML {
+            constructor(output, year, barHeight, balance) {
+                super(output)
+                this.year = year
+                this.balance = formatNumber(balance)
+                this.barHeight = barHeight
+                this.init()
+            }
+            render() {
+                const $ = this.$
+                $("div", { class: "bar", style: `height: ${this.barHeight}px`, "data-year": this.year })._(
+                    $("span", { class: "bar-text" })._(this.balance)
+                )
+            }
+        }
+
+
+        const chartContainer = document.getElementById("chart-container")
+        const inputContainer = document.getElementById("input-container")
+        const inputs = new Inputs(inputContainer, runCalculations)
+
+        function runCalculations() {
+            const { startingInvestment, yearlyInvestment, growthRate, years } = inputs.getInputValues()
+            const yearlyBalances = getYearlyBalances(startingInvestment, yearlyInvestment, growthRate, years)
+            createChart(yearlyBalances, chartContainer)
+        }
+
+        function getYearlyBalances(startingInvestment, yearlyInvestment, growthRate, years) {
+            let yearlyBalances = []
+            let balance = startingInvestment
+            for (let i = 0; i < years; i++) {
+                balance = (balance + yearlyInvestment) * (1 + growthRate)
+                yearlyBalances.push(balance.toFixed(2))
+            }
+            return yearlyBalances
+        }
+
+        function createChart(yearlyBalances, output) {
+            let maxBalance = Math.max(...yearlyBalances)
+            let chartHeight = 500
+
+            output.style.height = chartHeight + "px"
+            output.innerHTML = ""
+
+            for (let i = 0; i < yearlyBalances.length; i++) {
+                let balance = yearlyBalances[i]
+                let year = i + 1
+                let barHeight = balance / maxBalance * chartHeight
+                new Bar(output, year, barHeight, balance)
+            }
+        }
+
+        function formatNumber(num) {
+            if (num < 1000) return num
+            const formatters = {
+                "k": 1000,
+                "M": 1000000,
+                "B": 1000000000,
+                "T": 1000000000000
+            }
+            const formatter = Object.entries(formatters).reduce((a, b) => {
+                return Math.abs(num) < b[1] ? a : b
+            })
+            const letter = formatter[0], divider = formatter[1]
+            return (num / divider).toFixed(2) + letter
+        }
+
+        runCalculations()
+
+    </script>
+</body>
+
+</html>
