@@ -153,8 +153,9 @@ class RenderHTML {
                 //starts at top level elements them moves down the tree
                 topLevelEls.forEach(data => {
 
-                    let { id, tagName, attributes } = data
+                    let { id, tagName, attributes, events } = data
                     let el = createEl(id, tagName, attributes)
+                    if (events) applyEvents(el, events)
 
                     prepDiv.appendChild(el)
                     data.isRendered = true
