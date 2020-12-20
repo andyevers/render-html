@@ -49,7 +49,7 @@ class MyClass extends RenderHTML {
 ### Properties
 * `output {Node}` - Optional container defined in constructor that elements will append to.
 * `element {Node}` - If all html has one common parent, returns that common parent.
-* `elements {Object}` - Holds all nodes that are rendered with attribute ___key__ elements accessible through this.elements[*_key*].
+* `elements {Object}` - Holds all nodes that are rendered with attribute ___key__. elements accessible through this.elements[*_key*].
 * `topLevelEls {Array}` - Holds elements that do not have any parent node. only necessary if there is more than one element without a parent, otherwise use this.element.
 * `isInitialized {Bool}` - True when the class has successfully initialized.
 * `_renderData {Object}` - Holds element data before rendering
