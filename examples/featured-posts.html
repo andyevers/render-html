@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RenderHTML Featured Posts</title>
+    <title>Featured Posts - RenderHTML</title>
 </head>
 
 <body>
@@ -30,10 +30,10 @@
     </style>
 
 
-    <h1>RenderHTML Featured Posts</h1>
+    <h1>Featured Posts - RenderHTML Example</h1>
     <p>This example shows how you can give data to the RenderHTML class to dynamically create elements that have similar
         structure with different data, such as featured posts</p>
-        
+
     <div id="output">
         <!-- Posts will display in here -->
     </div>
@@ -41,7 +41,6 @@
 
     <script src="../render-html.js"></script>
     <script>
-        // This is an array of post data that will be used to make the featured posts
         const POST_DATA = [
             {
                 title: "I Love RenderHTML!",
@@ -66,42 +65,48 @@
         // Define your class extending the RenderHTML class
         class FeaturedPost extends RenderHTML {
             constructor(data, output) {
-                super(output)
+                super(output) // container HTML will append to after render()
                 this.title = data.title
                 this.description = data.description
                 this.image = data.image
                 this.link = data.link
+
+                this.logImageElement = () => {
+                    console.log(this.elements.imageElement)
+                }
+
                 this.init()
             }
 
-            logElement(e) {
-                console.log("just clicked element: ", e.target)
-            }
-
             render() {
-                const $ = this.$
-                const e = this.e
+                const $ = this.$ // creates elements
+                const e = this.e // add event listeners
 
                 //This will be the output HTML for your post data
-                $("div", { class: "post-item" })._(
-                    $("img", { src: this.image }),
+                $("div", { class: "post-item" })._( //accessible using this.element
+
+                    // use "_key" to access element by this.elements.imageElement
+                    $("img", { _key: "imageElement", src: this.image }),
                     $("div", { class: "post-details", style: "color: #333;" })._(
 
-                        $("h3", {}, e("click", this.logElement))._(this.title),
+                        // logImageElement function fires when title is clicked
+                        $("h3", {}, e("click", this.logImageElement))._(this.title),
+
                         $("p")._(this.description)
                     ),
+
                     $("a", { href: this.link, target: "_blank" })._("Read More")
                 )
             }
         }
 
         const output = document.getElementById("output")
+
         //create the posts
         for (let post of POST_DATA) {
             let postElement = new FeaturedPost(post, output)
             console.log("created element:", postElement.element)
         }
-
     </script>
 
 </body>
