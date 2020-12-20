@@ -1,7 +1,7 @@
 # RenderHTML
 Generate HTML from JavaScript Objects. With RenderHTML, you can easily:
 * Create Elements
-* Add Attributes
+* Set Attributes
 * Add Event Listeners
 
 
