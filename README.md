@@ -42,7 +42,7 @@ class MyClass extends RenderHTML {
 
 ### Methods
 * `render()` - All HTML to be created goes in here.
-* `init()` Activates the __render()__ method and appends the element(s) to output if defined.
+* `init()` - Activates the __render()__ method and appends the element(s) to output if defined.
 * `$(tagName = String, attributes = Object, events = Function/Array)` - only used inside __render()__. Used for creating elements & adding event listeners
 * `e(eType = String, func = Function)` - only used in __render()__. Used in third argument of __$()__ to add event listeners
 
