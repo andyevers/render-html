@@ -34,16 +34,21 @@ class RenderHTML {
                 childIds: [],
                 parentId: null,
                 isRendered: false,
+                isSVG: false,
+                childPosition: null,
                 events: events,
 
                 _: function () {
 
                     // move through each argument to store data in this._renderData object
+                    let i = 0
                     Array.from(arguments).forEach(data => {
+                        //data.childPosition = i // tells the order the child should be rendered in, otherwise using this.f() will mess up the order
 
                         let parent = renderer._renderData[id]
 
                         if (data.isRenderFunction === true) {
+                            data.childPosition = i // tells the order the child should be rendered in, otherwise using this.f() will mess up the order
                             data.parentId = id
                             renderer._renderFunctions.push(data)
                             return
@@ -55,7 +60,7 @@ class RenderHTML {
                             // this will happen if the variable was found undefined
                         }
                         else if (data.id) {
-
+                            data.childPosition = i
                             let childId = data.id
                             let child = renderer._renderData[childId]
 
@@ -65,6 +70,7 @@ class RenderHTML {
                         else {
                             console.error(`could not handle data for: ${data}`)
                         }
+                        i++
                     })
                     return this // allows for reuse of the function _()
                 }
@@ -92,8 +98,8 @@ class RenderHTML {
 
             function createChildren(data) { // creates els by moving through [children] array
 
+                sortChildren(data) // makes sure child els rendered in the correct order
                 let parentEl = prepDiv.querySelector(`[data-renderid='${data.id}']`)
-
                 data.childIds.forEach(cid => {
 
                     if (Array.isArray(cid)) { // checks if it is html string or element data
@@ -102,8 +108,9 @@ class RenderHTML {
 
                     } else { // creates el from renderData, then repeats this function on each child
 
-                        let child = renderData[cid],
-                            { id, tagName, attributes, events } = child,
+                        let child = renderData[cid]
+                        if (isSVG(child)) child.isSVG = true
+                        let { id, tagName, attributes, events } = child,
                             el = createEl(id, tagName, attributes)
 
                         if (events) applyEvents(el, events) // add event listeners
@@ -153,8 +160,10 @@ class RenderHTML {
             }
 
             function createEl(dataId, tagName, attributes = {}) { // generates element with temporary data-renderid for rendering
-                var el = document.createElement(tagName)
-                for (var [attr, val] of Object.entries(attributes)) {
+                // anything with the tagName "svg" or has a parent with tagName "svg" will be render with svg namespace
+                let isSVG = renderData[dataId] && renderData[dataId].isSVG === true
+                let el = isSVG ? document.createElementNS("http://www.w3.org/2000/svg", tagName) : document.createElement(tagName)
+                for (let [attr, val] of Object.entries(attributes)) {
                     el.setAttribute(attr, val)
                 }
                 el.setAttribute("data-renderid", dataId)
@@ -168,7 +177,7 @@ class RenderHTML {
 
                 //starts at top level elements them moves down the tree
                 topLevelEls.forEach(data => {
-
+                    if (isSVG(data)) data.isSVG = true
                     let { id, tagName, attributes, events } = data
                     let el = createEl(id, tagName, attributes)
                     if (events) applyEvents(el, events)
@@ -182,13 +191,24 @@ class RenderHTML {
                 prepDiv.querySelectorAll("[data-renderid]").forEach(el => el.removeAttribute("data-renderid"))
             }
 
+            function sortChildren(renderDataItem) {
+                if (renderDataItem.childIds.length <= 1) return
+
+                renderDataItem.childIds.sort((idA, idB) => {
+                    let posA = renderData[idA].childPosition
+                    let posB = renderData[idB].childPosition
+                    return posA < posB ? -1 : 1
+                })
+            }
+
             function runRenderFunctions() { // run functions inside this._renderFunctions and puts them in this._renderData 
+
                 const removeArrayValues = (arr, valuesToRemove) => arr.filter(val => !valuesToRemove.includes(val))
-                const matchParentData = (renderKeys, parentId) => {
+                const matchParentData = (renderKeys, parentId, childPosition) => {
                     renderKeys.forEach(key => {
                         if (!renderData[key].parentId) {
                             renderData[key].parentId = parentId
-                            renderData[parentId].childIds.push(key)
+                            renderData[parentId].childIds.splice(childPosition, 0, key)
                         }
                     })
                 }
@@ -197,14 +217,18 @@ class RenderHTML {
                     let oldRenderKeys = Object.keys(renderData)
                     obj.func()
                     let newRenderKeys = removeArrayValues(Object.keys(renderData), oldRenderKeys)
-                    matchParentData(newRenderKeys, obj.parentId)
+                    matchParentData(newRenderKeys, obj.parentId, obj.childPosition)
                     obj.isRendered = true
                 }
             }
 
+            function isSVG(renderDataItem) { // checks if has svg tag or has a parent with isSVG === true
+                let renderParent = renderData[renderDataItem.parentId]
+                if (renderDataItem.tagName === "svg" || renderParent && renderParent.isSVG === true) return true
+            }
+
             if (this.render) this.render()
             else return void console.error("You must define the render() function of your RenderHTML class to initialize")
-
             runRenderFunctions()
             prepareElements()
 
