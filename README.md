@@ -43,8 +43,9 @@ class MyClass extends RenderHTML {
 ### Methods
 * `render()` - All HTML to be created goes in here.
 * `init()` - Activates the __render()__ method and appends the element(s) to output if defined.
-* `$(tagName = String, attributes = Object, events = Function/Array)` - only used inside __render()__. Used for creating elements & adding event listeners
-* `e(eType = String, func = Function)` - only used in __render()__. Used in third argument of __$()__ to add event listeners
+* `$(tagName = String, attributes = Object, events = Function/Array)` - only used inside __render()__. Used for creating elements & adding event listeners.
+* `e(eType = String, func = Function)` - only used inside __render()__. Used in third argument of __$()__ to add event listeners.
+* `f(func = Function)` - only used inside __render()__. Used for adding functions inside render(). Useful for adding loops.
 
 ### Properties
 * `output {Node}` - Optional container defined in constructor that elements will append to.
@@ -52,16 +53,18 @@ class MyClass extends RenderHTML {
 * `elements {Object}` - Holds all nodes that are rendered with attribute ___key__. elements accessible through this.elements[*_key*].
 * `topLevelEls {Array}` - Holds elements that do not have any parent node. only necessary if there is more than one element without a parent, otherwise use this.element.
 * `isInitialized {Bool}` - True when the class has successfully initialized.
-* `_renderData {Object}` - Holds element data before rendering
+* `_renderData {Object}` - Holds element data before rendering.
+* `_renderFunctions {Array}` - holds objects containing functions that will be fired during rendering, used to assign the generated HTML to a parent.
 
 <br>
 
 ## Rendering
 
-* __$()__: for creating elements
-* __e()__: adding event listeners
-* ___()__: adding child elements / innerHTML (method returned by __$()__)
-* ___key__: added to attributes inside __$()__ to access in this.elements[*_key*]
+* __$()__: For creating elements.
+* __e()__: Adding event listeners.
+* __f()__: Adding functions during rendering. Useful for adding loops.
+* ___()__: Adding child elements / innerHTML (method returned by __$()__).
+* ___key__: Added to attributes inside __$()__ to access in this.elements[*_key*].
 
 ## Example Script
 
