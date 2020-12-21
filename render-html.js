@@ -8,6 +8,7 @@ class RenderHTML {
         this.topLevelEls = null // Array: holds elements that do not have any parent node. only necessary if there is more than one element without a parent, othewise use this.element
         this.isInitialized = false // Bool: true when the class has successfully initialized
         this._renderData = {} // Object: holds element data before rendering
+        this._renderFunctions = [] // Array: holds objects containing functions that will be fired during rendering, used to assign the generated HTML to a parent
 
         // RENDER FUNCTIONS________________________________
 
@@ -42,6 +43,11 @@ class RenderHTML {
 
                         let parent = renderer._renderData[id]
 
+                        if (data.isRenderFunction === true) {
+                            data.parentId = id
+                            renderer._renderFunctions.push(data)
+                            return
+                        }
                         // html string stored as array to distinguish them from nodes
                         if (typeof data === "string" || typeof data === "number") parent.childIds.push([data])
 
@@ -66,6 +72,15 @@ class RenderHTML {
             return this._renderData[id]
         }
 
+        this.f = func => { // allows adding functions inside rendering
+            return {
+                isRenderFunction: true,
+                isRendered: false,
+                parentId: null,
+                func: func
+            }
+        }
+
         this.e = (eType, func) => [eType, func] // used in 3rd arg in $() for adding event listeners
         // /RENDER FUNCTIONS________________________________
 
@@ -73,6 +88,7 @@ class RenderHTML {
 
             let prepDiv = null
             let renderData = this._renderData
+            let renderFunctions = this._renderFunctions
 
             function createChildren(data) { // creates els by moving through [children] array
 
@@ -166,10 +182,32 @@ class RenderHTML {
                 prepDiv.querySelectorAll("[data-renderid]").forEach(el => el.removeAttribute("data-renderid"))
             }
 
+            function runRenderFunctions() { // run functions inside this._renderFunctions and puts them in this._renderData 
+                const removeArrayValues = (arr, valuesToRemove) => arr.filter(val => !valuesToRemove.includes(val))
+                const matchParentData = (renderKeys, parentId) => {
+                    renderKeys.forEach(key => {
+                        if (!renderData[key].parentId) {
+                            renderData[key].parentId = parentId
+                            renderData[parentId].childIds.push(key)
+                        }
+                    })
+                }
+                for (let obj of renderFunctions) {
+                    // run the renderFunctions and add parentId to all the newly added top level renderData
+                    let oldRenderKeys = Object.keys(renderData)
+                    obj.func()
+                    let newRenderKeys = removeArrayValues(Object.keys(renderData), oldRenderKeys)
+                    matchParentData(newRenderKeys, obj.parentId)
+                    obj.isRendered = true
+                }
+            }
+
             if (this.render) this.render()
             else return void console.error("You must define the render() function of your RenderHTML class to initialize")
 
+            runRenderFunctions()
             prepareElements()
+
             this.topLevelEls = Array.from(prepDiv.children)
             this.elements = getElKeys(this.topLevelEls)
 
