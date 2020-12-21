@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fan - RenderHTML Example</title>
+</head>
+
+<body>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            text-align: center;
+        }
+
+        .blade {
+            --rotation: 0deg;
+            -webkit-transform: rotate(var(--rotation));
+            -ms-transform: rotate(var(--rotation));
+            transform: rotate(var(--rotation));
+        }
+
+        .blade,
+        .spinning-fan {
+            -webkit-transform-origin: 371.787px 371.783px;
+            -ms-transform-origin: 371.787px 371.783px;
+            transform-origin: 371.787px 371.783px;
+        }
+
+        svg {
+            width: 400px;
+        }
+
+        .spinning-fan {
+            -webkit-animation: spin 3s linear infinite;
+            animation: spin 3s linear infinite;
+        }
+
+        @-webkit-keyframes spin {
+            from {
+                -webkit-transform: rotate(0deg);
+                -ms-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+
+            to {
+                -webkit-transform: rotate(360deg);
+                -ms-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            from {
+                -webkit-transform: rotate(0deg);
+                -ms-transform: rotate(0deg);
+                transform: rotate(0deg);
+            }
+
+            to {
+                -webkit-transform: rotate(360deg);
+                -ms-transform: rotate(360deg);
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+
+    <h1>Fan - RenderHTML Example</h1>
+    <p>This examples shows how you can use <strong>f()</strong> method to create loops inside render()</p>
+
+    <div id="fan-container"></div>
+
+    <script src="../render-html.js"></script>
+    <script>
+
+        class Fan extends RenderHTML {
+            constructor(output, blades) {
+                super(output)
+                this.blades = blades
+
+                this.getRotation = bladeNum => {
+                    if (this.blades === 0) return
+                    const angle = 360 / this.blades
+                    return bladeNum * angle
+                }
+                this.init()
+            }
+
+            render() {
+                const $ = this.$
+                const f = this.f
+
+                $("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 743.568 1075.158" })._(
+                    $("rect", { fill: "#00b4bd", x: "345.018", y: "399.01", width: "53.537", height: "676.147" }),
+
+                    $("g", { class: "spinning-fan" })._(
+                        f(() => {
+                            for (let i = 0; i < this.blades; i++) {
+                                $("path", {
+                                    class: "blade", fill: "#6c9cff", style: `--rotation: ${this.getRotation(i)}deg;`,
+                                    d: "M371.784,0a22.1,22.1,0,0,0-22.1,22.1V371.783H393.89V22.1A22.1,22.1,0,0,0,371.788,0Z",
+                                })
+                            }
+                        }),
+                        $("circle", { fill: "#008890", cx: "371.787", cy: "371.783", r: "71.168" }),
+                    )
+                )
+            }
+        }
+
+        new Fan(document.getElementById("fan-container"), 4)
+
+    </script>
+</body>
+
+</html>
