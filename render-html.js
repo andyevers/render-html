@@ -1,4 +1,3 @@
-
 class RenderHTML {
     /**
      * @param {Node} output: optional container that elements will append to
@@ -198,7 +197,9 @@ class RenderHTML {
             function sortChildren(renderDataItem) {
                 if (renderDataItem.childIds.length <= 1) return
 
+                console.log(renderDataItem)
                 renderDataItem.childIds.sort((idA, idB) => {
+                    if (!renderData[idA] || !renderData[idB]) return 0
                     let posA = renderData[idA].childPosition
                     let posB = renderData[idB].childPosition
                     return posA < posB ? -1 : 1
