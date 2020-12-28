@@ -1,3 +1,4 @@
+
 class RenderHTML {
     /**
      * @param {Node} output: optional container that elements will append to
@@ -47,6 +48,12 @@ class RenderHTML {
 
                         let parent = renderer._renderData[id]
 
+
+                        if (!data) {
+                            return
+                            // this will happen if the variable was found undefined
+                        }
+
                         if (data.isRenderFunction === true) {
                             data.childPosition = i // tells the order the child should be rendered in, otherwise using this.f() will mess up the order
                             data.parentId = id
@@ -56,9 +63,6 @@ class RenderHTML {
                         // html string stored as array to distinguish them from nodes
                         if (typeof data === "string" || typeof data === "number") parent.childIds.push([data])
 
-                        else if (!data) {
-                            // this will happen if the variable was found undefined
-                        }
                         else if (data.id) {
                             data.childPosition = i
                             let childId = data.id
