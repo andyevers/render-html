@@ -99,9 +99,11 @@ class RenderHTML {
             let renderData = this._renderData
             let renderFunctions = this._renderFunctions
 
+
             function createChildren(data) { // creates els by moving through [children] array
 
-                sortChildren(data) // makes sure child els rendered in the correct order
+                if (renderFunctions) sortChildren(data) // makes sure child els rendered in the correct order
+
                 let parentEl = prepDiv.querySelector(`[data-renderid='${data.id}']`)
                 data.childIds.forEach(cid => {
 
@@ -197,7 +199,6 @@ class RenderHTML {
             function sortChildren(renderDataItem) {
                 if (renderDataItem.childIds.length <= 1) return
 
-                console.log(renderDataItem)
                 renderDataItem.childIds.sort((idA, idB) => {
                     if (!renderData[idA] || !renderData[idB]) return 0
                     let posA = renderData[idA].childPosition
