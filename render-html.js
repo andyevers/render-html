@@ -9,6 +9,7 @@ class RenderHTML {
         this.isInitialized = false // Bool: true when the class has successfully initialized
         this._renderData = {} // Object: holds element data before rendering
         this._renderFunctions = [] // Array: holds objects containing functions that will be fired during rendering, used to assign the generated HTML to a parent
+        this._curPosition = 0 // used for specifying the order of the children to be rendered
 
         // RENDER FUNCTIONS________________________________
 
@@ -35,26 +36,20 @@ class RenderHTML {
                 parentId: null,
                 isRendered: false,
                 isSVG: false,
-                childPosition: null,
+                childPosition: this._curPosition,
                 events: events,
 
                 _: function () {
-
                     // move through each argument to store data in this._renderData object
-                    let i = 0
                     Array.from(arguments).forEach(data => {
-                        //data.childPosition = i // tells the order the child should be rendered in, otherwise using this.f() will mess up the order
-
+                        renderer._curPosition++ // tells the order the child should be rendered in, otherwise using this.f() will mess up the order
                         let parent = renderer._renderData[id]
 
-
                         if (!data) {
-                            return
-                            // this will happen if the variable was found undefined
+                            return // this will happen if the variable was found undefined
                         }
 
                         if (data.isRenderFunction === true) {
-                            data.childPosition = i // tells the order the child should be rendered in, otherwise using this.f() will mess up the order
                             data.parentId = id
                             renderer._renderFunctions.push(data)
                             return
@@ -63,7 +58,6 @@ class RenderHTML {
                         if (typeof data === "string" || typeof data === "number") parent.childIds.push([data])
 
                         else if (data.id) {
-                            data.childPosition = i
                             let childId = data.id
                             let child = renderer._renderData[childId]
 
@@ -71,9 +65,8 @@ class RenderHTML {
                             child.parentId = id
                         }
                         else {
-                            console.error(`could not handle data for: ${data}`)
+                            console.error('could not handle data for: ', data)
                         }
-                        i++
                     })
                     return this // allows for reuse of the function _()
                 }
@@ -98,7 +91,6 @@ class RenderHTML {
             let prepDiv = null
             let renderData = this._renderData
             let renderFunctions = this._renderFunctions
-
 
             function createChildren(data) { // creates els by moving through [children] array
 
@@ -193,7 +185,7 @@ class RenderHTML {
                 })
 
                 //remove data-renderids after structure is created
-                prepDiv.querySelectorAll("[data-renderid]").forEach(el => el.removeAttribute("data-renderid"))
+                // prepDiv.querySelectorAll("[data-renderid]").forEach(el => el.removeAttribute("data-renderid"))
             }
 
             function sortChildren(renderDataItem) {
