@@ -185,7 +185,7 @@ class RenderHTML {
                 })
 
                 //remove data-renderids after structure is created
-                // prepDiv.querySelectorAll("[data-renderid]").forEach(el => el.removeAttribute("data-renderid"))
+                prepDiv.querySelectorAll("[data-renderid]").forEach(el => el.removeAttribute("data-renderid"))
             }
 
             function sortChildren(renderDataItem) {
