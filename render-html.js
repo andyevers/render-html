@@ -143,16 +143,11 @@ class RenderHTML {
                 }
 
                 const addChildKeys = el => {
-                    Array.from(el.children).forEach(c => {
-                        extractKey(c)
-                        Array.from(c.children).forEach(c2 => addChildKeys(c2))
-                    })
+                    extractKey(el)
+                    Array.from(el.children).forEach(c => addChildKeys(c))
                 }
 
-                topLevelEls.forEach(tlEl => {
-                    extractKey(tlEl)
-                    addChildKeys(tlEl)
-                })
+                topLevelEls.forEach(tlEl => addChildKeys(tlEl))
                 return elKeys
             }
 
