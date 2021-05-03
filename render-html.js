@@ -1,5 +1,5 @@
 class RenderHTML {
-    /**
+      /**
      * @param {Node} output: optional container that elements will append to
      */
     constructor(output) {
@@ -37,6 +37,8 @@ class RenderHTML {
                 isSVG: false,
                 childPosition: 0,
                 events: events,
+                // addLength: 0,
+                originalPosition: 0,
 
                 _: function () {
                     // move through each argument to store data in this._renderData object
@@ -46,7 +48,7 @@ class RenderHTML {
                         for (let i = 0; i < arguments.length; i++) {
                             let curData = arguments[i]
                             if (typeof curData !== 'object') continue
-                            curData.childPosition = i
+                            curData.childPosition = curData.originalPosition = i
                         }
 
                         if (typeof data === 'undefined' || typeof data === 'null') {
@@ -57,6 +59,7 @@ class RenderHTML {
                         }
                         else if (data.isRenderFunction === true) {
                             data.parentId = id
+                            data.id = randId()
                             renderer._renderFunctions.push(data)
                         }
                         else if (data.id) {
@@ -78,6 +81,7 @@ class RenderHTML {
 
         this.f = func => { // allows adding functions inside rendering
             return {
+                id: null,
                 isRenderFunction: true,
                 isRendered: false,
                 parentId: null,
@@ -94,11 +98,13 @@ class RenderHTML {
             let prepDiv = null
             let renderData = this._renderData
             let renderFunctions = this._renderFunctions
+            let _this = this
 
             function createChildren(data) { // creates els by moving through [children] array
 
                 if (renderFunctions) sortChildren(data) // makes sure child els rendered in the correct order
                 let parentEl = prepDiv.querySelector(`[data-renderid='${data.id}']`)
+
                 data.childIds.forEach(cid => {
 
                     if (Array.isArray(cid)) { // checks if it is html string or element data
@@ -111,6 +117,8 @@ class RenderHTML {
                         if (isSVG(child)) child.isSVG = true
                         let { id, tagName, attributes, events } = child
                         let el = createEl(id, tagName, attributes)
+                        // el.dataset.childposition = child.childPosition
+                        // el.dataset.originalPosition = child.originalPosition
 
                         if (events) applyEvents(el, events) // add event listeners
 
@@ -207,12 +215,64 @@ class RenderHTML {
                         }
                     })
                 }
+
+
                 for (let obj of renderFunctions) {
                     // run the renderFunctions and add parentId to all the newly added top level renderData
                     let oldRenderKeys = Object.keys(renderData)
                     obj.func()
                     let newRenderKeys = removeArrayValues(Object.keys(renderData), oldRenderKeys)
+
                     matchParentData(newRenderKeys, obj.parentId, obj.childPosition)
+
+                    let newSiblings = []
+                    newRenderKeys.forEach(k => {
+                        let renderItem = _this._renderData[k]
+                        if (renderItem.parentId === obj.parentId) {
+                            newSiblings.push(renderItem)
+                        }
+                    })
+
+                    if (newSiblings.length === 0) {
+                        oldRenderKeys.forEach(k => {
+                            let renderItem = _this._renderData[k]
+                            if (renderItem.parentId === obj.parentId && renderItem.originalPosition >= obj.originalPosition) {
+                                renderItem.childPosition -= 1
+                                renderItem.originalPosition -= 1
+                            }
+                        })
+                        _this._renderFunctions.forEach(f => {
+
+                            if (f.parentId === obj.parentId && f.originalPosition >= obj.originalPosition) {
+
+                                f.childPosition -= 1
+                                f.originalPosition -= 1
+                            }
+                        })
+                        obj.isRendered = true
+                        continue
+                    }
+
+                    for (let i = 0; i < newSiblings.length; i++) {
+                        let k = newSiblings[i]
+                        k.childPosition += obj.childPosition + i
+                        k.originalPosition += obj.childPosition + i
+                    }
+
+                    oldRenderKeys.forEach(k => {
+                        let renderItem = _this._renderData[k]
+                        if (renderItem.parentId === obj.parentId && renderItem.originalPosition > obj.originalPosition) {
+                            renderItem.childPosition += newSiblings.length
+                        }
+                    })
+
+                    _this._renderFunctions.forEach(f => {
+
+                        if (f.parentId === obj.parentId && f.originalPosition > obj.originalPosition && f !== obj) {
+                            f.childPosition += newSiblings.length
+                        }
+                    })
+
                     obj.isRendered = true
                 }
             }
