@@ -37,7 +37,6 @@ class RenderHTML {
                 isSVG: false,
                 childPosition: 0,
                 events: events,
-                // addLength: 0,
                 originalPosition: 0,
 
                 _: function () {
