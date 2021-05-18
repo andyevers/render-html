@@ -116,8 +116,6 @@ class RenderHTML {
                         if (isSVG(child)) child.isSVG = true
                         let { id, tagName, attributes, events } = child
                         let el = createEl(id, tagName, attributes)
-                        // el.dataset.childposition = child.childPosition
-                        // el.dataset.originalPosition = child.originalPosition
 
                         if (events) applyEvents(el, events) // add event listeners
 
