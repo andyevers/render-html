@@ -46,11 +46,11 @@ class RenderHTML {
 
                         for (let i = 0; i < arguments.length; i++) {
                             let curData = arguments[i]
-                            if (typeof curData !== 'object') continue
+                            if (typeof curData !== 'object' || curData === null) continue
                             curData.childPosition = curData.originalPosition = i
                         }
 
-                        if (typeof data === 'undefined' || typeof data === 'null') {
+                        if (typeof data === 'undefined' || data === null) {
                             // this will happen if the variable was found undefined
                         }
                         else if (typeof data === "string" || typeof data === "number") {
